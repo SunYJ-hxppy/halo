@@ -31,14 +31,14 @@ const METHODS = [
 // Videos live at:  static/videos/teaser/<file>
 const TEASER_SAMPLES = [
   {
-    prompt: "A red Porsche drives beside a lake at sunrise.",
-    reference: "static/videos/teaser/sample1_reference.mp4",
-    halo:      "static/videos/teaser/sample1_halo.mp4",
+    prompt: "A car driving around a roundabout.",
+    reference: "static/videos/teaser/carroundabout_ref.mp4",
+    halo:      "static/videos/teaser/carroundabout_ours.mp4",
   },
   {
-    prompt: "Two stormtroopers riding mechanical steeds across a concrete field.",
-    reference: "static/videos/teaser/sample2_reference.mp4",
-    halo:      "static/videos/teaser/sample2_halo.mp4",
+    prompt: "Motion transfer result.",
+    reference: "static/videos/teaser/EMA_MVI2_ref.mp4",
+    halo:      "static/videos/teaser/EMA_MVI2_ours.mp4",
   },
 ];
 
@@ -149,22 +149,30 @@ function buildTeaserCell(src, label, ours) {
   tag.textContent = label;
   cell.appendChild(tag);
 
-  const video = document.createElement("video");
-  video.muted = true; video.loop = true; video.autoplay = true;
-  video.playsInline = true; video.setAttribute("playsinline", ""); video.controls = false;
-  const source = document.createElement("source");
-  source.src = src; source.type = "video/mp4";
-  video.appendChild(source);
-
   const ph = document.createElement("div");
   ph.className = "placeholder cell-ph";
   ph.innerHTML = `Add<br><code>${src.replace("static/videos/", "")}</code>`;
   ph.style.display = "none";
-  const fail = () => { video.style.display = "none"; ph.style.display = "flex"; };
-  video.addEventListener("error", fail);
-  source.addEventListener("error", fail);
+  const fail = () => { media.style.display = "none"; ph.style.display = "flex"; };
 
-  cell.appendChild(video);
+  let media;
+  if (/\.gif($|\?)/i.test(src)) {
+    // GIFs loop/animate natively as images
+    media = document.createElement("img");
+    media.src = src; media.alt = label; media.loading = "lazy";
+    media.addEventListener("error", fail);
+  } else {
+    media = document.createElement("video");
+    media.muted = true; media.loop = true; media.autoplay = true;
+    media.playsInline = true; media.setAttribute("playsinline", ""); media.controls = false;
+    const source = document.createElement("source");
+    source.src = src; source.type = "video/mp4";
+    media.appendChild(source);
+    media.addEventListener("error", fail);
+    source.addEventListener("error", fail);
+  }
+
+  cell.appendChild(media);
   cell.appendChild(ph);
   return cell;
 }

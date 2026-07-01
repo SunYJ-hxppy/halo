@@ -120,11 +120,11 @@ figcaption { color: var(--fg-soft); font-size: .88rem; text-align: center; margi
 .tcar-pair { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 @media (max-width:600px){ .tcar-pair{ grid-template-columns:1fr; } }
 .teaser-cell { position:relative; }
-.teaser-cell video {
+.teaser-cell video, .teaser-cell img {
   width:100%; aspect-ratio:16/10; object-fit:cover; display:block;
   border-radius:12px; border:1px solid var(--border); background:#000;
 }
-.teaser-cell.ours video { border-color: var(--accent); box-shadow:0 0 0 2px rgba(124,58,237,.30); }
+.teaser-cell.ours video, .teaser-cell.ours img { border-color: var(--accent); box-shadow:0 0 0 2px rgba(124,58,237,.30); }
 .teaser-cell .tag { position:absolute; top:8px; left:8px; z-index:2; margin:0; }
 .teaser-cell .cell-ph { aspect-ratio:16/10; min-height:0; }
 .tcar-slide .slide-prompt { text-align:center; font-style:italic; color:var(--fg); margin:12px auto 0; max-width:760px; }
