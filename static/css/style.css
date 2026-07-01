@@ -193,6 +193,9 @@ figcaption { color: var(--fg-soft); font-size: .88rem; text-align: center; margi
 }
 @media (max-width: 900px){ .method-grid{ grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 520px){ .method-grid{ grid-template-columns: 1fr; } }
+/* Movie Scene: Reference + HALO only */
+.method-grid.cols-2 { grid-template-columns: repeat(2,1fr); max-width: 900px; margin-left:auto; margin-right:auto; }
+@media (max-width: 520px){ .method-grid.cols-2{ grid-template-columns: 1fr; } }
 .method-cell { position: relative; }
 .method-cell video {
   width:100%; aspect-ratio: 16/10; object-fit: cover;

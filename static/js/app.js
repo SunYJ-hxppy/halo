@@ -7,7 +7,7 @@
  *  Video files live under:  static/videos/<exampleId>/<method>.mp4
  *
  *  Methods (column order, left -> right):
- *      reference, moft, conmo, motionclone, ditflow, ropecraft, gwtf, halo
+ *      reference, halo (Ours), conmo, ditflow, gwtf, motionclone, ropecraft
  *
  *  To add / rename / reorder examples, just edit the BENCHMARK_EXAMPLES and
  *  MOVIE_EXAMPLES arrays below. Any missing .mp4 automatically shows a small
@@ -16,14 +16,20 @@
  * ---------------------------------------------------------------------------
  */
 
+// Video Results: Reference first, then HALO (Ours), then baselines.
 const METHODS = [
   { id: "reference",   label: "Reference" },
-  { id: "moft",        label: "MoFT" },
+  { id: "halo",        label: "HALO (Ours)", ours: true },
   { id: "conmo",       label: "ConMo" },
-  { id: "motionclone", label: "MotionClone" },
   { id: "ditflow",     label: "DiTFlow" },
-  { id: "ropecraft",   label: "RoPECraft" },
   { id: "gwtf",        label: "GWTF" },
+  { id: "motionclone", label: "MotionClone" },
+  { id: "ropecraft",   label: "RoPECraft" },
+];
+
+// Movie Scene: only Reference and HALO (Ours).
+const MOVIE_METHODS = [
+  { id: "reference",   label: "Reference" },
   { id: "halo",        label: "HALO (Ours)", ours: true },
 ];
 
@@ -44,17 +50,17 @@ const TEASER_SAMPLES = [
 
 // Standard benchmark examples.  id -> folder name under static/videos/
 const BENCHMARK_EXAMPLES = [
-  { id: "porsche",     label: "Red Porsche",   prompt: "A red Porsche drives beside a lake at sunrise." },
-  { id: "motorbike",   label: "Motorbike",     prompt: "The person is riding a motorbike on a muddy course." },
-  { id: "lion",        label: "Lion",          prompt: "A lion walking on a sandy path in a wildlife reserve." },
-  { id: "penguin",     label: "Penguin",       prompt: "The penguin is walking in a zoo enclosure, towards its habitat pool." },
+  { id: "driftturn",   label: "Drift turn",   prompt: "A car performing a drift turn." },
+  { id: "motorbike",   label: "Motorbike",    prompt: "The person is riding a motorbike on a muddy course." },
+  { id: "scootergray", label: "Scooter",      prompt: "A person riding a scooter." },
 ];
 
-// Movie Scene Dataset examples.
+// Movie Scene Dataset examples (Reference + HALO only).
 const MOVIE_EXAMPLES = [
-  { id: "stormtrooper", label: "Stormtroopers", prompt: "Two stormtroopers riding mechanical steeds across a concrete field." },
-  { id: "minions",      label: "Minions",       prompt: "A small Minions walks past one another in a loose line, moving steadily across the green space." },
-  { id: "spongebob",    label: "SpongeBob",     prompt: "A SpongeBob-style adventurer rides a bouncing anemone-creature across a smooth open ground." },
+  { id: "ms_carturn",  label: "Car turn",   prompt: "Cinematic car turn." },
+  { id: "ms_moi",      label: "MOI",        prompt: "Cinematic motion transfer." },
+  { id: "ms_moisc2",   label: "MOI (2)",    prompt: "Cinematic motion transfer." },
+  { id: "ms_tax3",     label: "Taxi",       prompt: "Cinematic taxi scene." },
 ];
 
 // ---------- build one <figure> panel for a (example, method) pair ----------
@@ -103,20 +109,23 @@ function buildPanel(exampleId, method) {
 }
 
 // ---------- render a full method grid for the selected example ----------
-function renderGrid(gridEl, promptEl, example) {
+function renderGrid(gridEl, promptEl, example, methods) {
   gridEl.innerHTML = "";
   promptEl.textContent = `“${example.prompt}”`;
-  METHODS.forEach(m => gridEl.appendChild(buildPanel(example.id, m)));
+  methods.forEach(m => gridEl.appendChild(buildPanel(example.id, m)));
   // (re)start playback for freshly inserted videos
   gridEl.querySelectorAll("video").forEach(v => { try { v.play(); } catch (e) {} });
 }
 
 // ---------- wire up an example selector + grid ----------
-function initGallery({ pillsId, gridId, promptId, examples }) {
+function initGallery({ pillsId, gridId, promptId, examples, methods = METHODS }) {
   const pills = document.getElementById(pillsId);
   const grid = document.getElementById(gridId);
   const promptEl = document.getElementById(promptId);
   if (!pills || !grid || !promptEl || !examples.length) return;
+
+  // let the grid columns match the number of methods (e.g. 2 for Movie Scene)
+  gridEl_setCols(grid, methods.length);
 
   let active = 0;
   const buttons = examples.map((ex, i) => {
@@ -126,7 +135,7 @@ function initGallery({ pillsId, gridId, promptId, examples }) {
     b.addEventListener("click", () => {
       active = i;
       buttons.forEach((x, j) => x.classList.toggle("active", j === i));
-      renderGrid(grid, promptEl, examples[i]);
+      renderGrid(grid, promptEl, examples[i], methods);
     });
     return b;
   });
@@ -136,7 +145,12 @@ function initGallery({ pillsId, gridId, promptId, examples }) {
   buttons.forEach(b => groupWrap.appendChild(b));
   pills.appendChild(groupWrap);
 
-  renderGrid(grid, promptEl, examples[active]);
+  renderGrid(grid, promptEl, examples[active], methods);
+}
+
+// give a method-grid a sensible fixed column count on wide screens
+function gridEl_setCols(grid, n) {
+  if (n <= 2) grid.classList.add("cols-2");
 }
 
 // ---------- build a labelled video cell (reference / ours) ----------
@@ -248,5 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gridId: "movie-grid",
     promptId: "movie-prompt",
     examples: MOVIE_EXAMPLES,
+    methods: MOVIE_METHODS,
   });
 });
