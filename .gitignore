@@ -1,0 +1,13 @@
+# OS
+.DS_Store
+
+# Editor / tooling state (do not publish)
+.claude/
+.omc/
+**/.omc/
+
+# Archived DRIFT template assets (not part of the HALO page)
+static/_drift_archive/
+
+# Source PDFs for figures (the site uses the rendered .png versions)
+static/images/*.pdf

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HALO: Controlling Motion Transfer in Diffusion Transformers via Attention Heads</title>
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/favicon-32.png?v=2">
+  <link rel="alternate icon" href="static/favicon.ico?v=2">
+  <link rel="apple-touch-icon" href="static/favicon-180.png?v=2">
+  <link rel="canonical" href="https://sunyj-hxppy.github.io/halo/">
+  <meta name="description" content="HALO (ECCV 2026): a head-aware, training-free controllable motion transfer framework for video Diffusion Transformers. HALO identifies motion-specific and structure-specialized attention heads and uses them to transfer reference motion while following a target prompt.">
+  <meta name="keywords" content="HALO, motion transfer, diffusion transformers, DiT, attention heads, video generation, semantic correspondence, CogVideoX, ECCV 2026">
+  <meta name="author" content="Sunyoung Jung, Jiwoo Park, Yoonseok Choi, Kyobin Choo, Ming-Hsuan Yang, Seong Jae Hwang">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://sunyj-hxppy.github.io/halo/"/>
+  <meta property="og:title" content="HALO: Controlling Motion Transfer in Diffusion Transformers via Attention Heads"/>
+  <meta property="og:description" content="ECCV 2026 — A head-aware, training-free controllable motion transfer framework for video Diffusion Transformers."/>
+  <meta property="og:image" content="https://sunyj-hxppy.github.io/halo/static/images/fig8_final.jpg"/>
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="HALO: Controlling Motion Transfer in Diffusion Transformers via Attention Heads">
+  <meta name="twitter:description" content="ECCV 2026 — Head-aware controllable motion transfer for video Diffusion Transformers.">
+  <meta name="twitter:image" content="https://sunyj-hxppy.github.io/halo/static/images/fig8_final.jpg">
+
+  <!-- Google Scholar / Highwire citation tags -->
+  <meta name="citation_title" content="Controlling Motion Transfer in Diffusion Transformers via Attention Heads">
+  <meta name="citation_author" content="Jung, Sunyoung">
+  <meta name="citation_author" content="Park, Jiwoo">
+  <meta name="citation_author" content="Choi, Yoonseok">
+  <meta name="citation_author" content="Choo, Kyobin">
+  <meta name="citation_author" content="Yang, Ming-Hsuan">
+  <meta name="citation_author" content="Hwang, Seong Jae">
+  <meta name="citation_conference_title" content="European Conference on Computer Vision (ECCV)">
+  <meta name="citation_publication_date" content="2026">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "Controlling Motion Transfer in Diffusion Transformers via Attention Heads",
+    "author": [
+      {"@type":"Person","name":"Sunyoung Jung"},
+      {"@type":"Person","name":"Jiwoo Park"},
+      {"@type":"Person","name":"Yoonseok Choi"},
+      {"@type":"Person","name":"Kyobin Choo"},
+      {"@type":"Person","name":"Ming-Hsuan Yang"},
+      {"@type":"Person","name":"Seong Jae Hwang"}
+    ],
+    "publisher": "European Conference on Computer Vision (ECCV) 2026",
+    "url": "https://sunyj-hxppy.github.io/halo/",
+    "abstract": "HALO is a head-aware, training-free controllable motion transfer framework for video Diffusion Transformers that identifies motion-specific and structure-specialized attention heads and leverages them to transfer reference motion while following a target prompt."
+  }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css?v=1">
+  <script defer src="static/js/app.js"></script>
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <nav class="topnav">
+    <div class="container">
+      <span class="brand">HALO</span>
+      <span class="links">
+        <a href="#abstract">Abstract</a>
+        <a href="#motivation">Motivation</a>
+        <a href="#analysis">Head Analysis</a>
+        <a href="#method">Method</a>
+        <a href="#results">Video Results</a>
+        <a href="#moviescene">Movie Scene</a>
+        <a href="#quant">Quantitative</a>
+        <a href="#cite">Cite</a>
+      </span>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero">
+    <div class="container">
+      <h1>Controlling Motion Transfer in Diffusion<br>Transformers via Attention Heads</h1>
+      <div class="venue">ECCV 2026</div>
+
+      <div class="authors">
+        <a href="#" target="_blank" rel="noopener">Sunyoung Jung</a><sup>1,*</sup>,
+        <a href="#" target="_blank" rel="noopener">Jiwoo Park</a><sup>1,2,*</sup>,
+        <a href="https://yoonseokchoi-ai.github.io/" target="_blank" rel="noopener">Yoonseok Choi</a><sup>1</sup>,
+        <a href="#" target="_blank" rel="noopener">Kyobin Choo</a><sup>1</sup>,
+        <a href="https://faculty.ucmerced.edu/mhyang/" target="_blank" rel="noopener">Ming-Hsuan Yang</a><sup>3</sup>,
+        <a href="#" target="_blank" rel="noopener">Seong Jae Hwang</a><sup>1,&dagger;</sup>
+      </div>
+      <div class="affil">
+        <span class="aff-item"><sup>1</sup>Yonsei University</span>
+        <span class="aff-sep">&middot;</span>
+        <span class="aff-item"><sup>2</sup>LG Electronics</span>
+        <span class="aff-sep">&middot;</span>
+        <span class="aff-item"><sup>3</sup>University of California, Merced</span>
+      </div>
+      <div class="corr">* Equal contribution &nbsp;&middot;&nbsp; &dagger; Corresponding author</div>
+
+      <div class="btn-row">
+        <!-- TODO: replace # with arXiv / paper PDF link -->
+        <a class="btn" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5z"/></svg>
+          Paper
+        </a>
+        <!-- TODO: replace # with arXiv abstract link -->
+        <a class="btn" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+          arXiv
+        </a>
+        <a class="btn" href="https://github.com/SunYJ-hxppy/halo" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.42.36.8 1.08.8 2.18v3.23c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+          Code
+        </a>
+        <a class="btn" href="#results">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Video Results
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== TL;DR ===== -->
+  <section style="border-top:none; padding-top:20px; padding-bottom:8px;">
+    <div class="container">
+      <div class="tldr">
+        <span class="tldr-badge">TL;DR</span>
+        <p>
+          <strong>HALO</strong> reveals that video Diffusion Transformers encode motion and structure in distinct
+          attention heads, and leverages these heads with <strong>semantic-aware motion guidance</strong> and
+          <strong>selective structural injection</strong> to enable <strong>training-free, prompt-aligned</strong> motion
+          transfer with improved motion fidelity and structural alignment.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TEASER ===== -->
+  <section style="border-top:none; padding-top:8px;">
+    <div class="container">
+      <figure>
+        <img src="static/images/fig8_final.jpg" alt="Qualitative comparison of HALO against U-Net- and DiT-based motion transfer baselines"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">
+          Add <code>static/images/fig8_final.jpg</code> — the qualitative comparison teaser.
+        </div>
+        <figcaption>
+          <strong>HALO</strong> is a head-aware controllable motion transfer framework for video Diffusion Transformers.
+          By identifying motion- and structure-specialized attention heads, it generates videos that follow the target
+          prompt while staying motion- and structure-aligned with the reference &mdash; producing semantically coherent
+          motion and preserving subject identity where baselines drift, leak identity, or fail.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== ABSTRACT ===== -->
+  <section id="abstract" class="abstract">
+    <div class="container">
+      <h2>Abstract</h2>
+      <p>
+        Diffusion Transformers (DiTs) have advanced video generation with high-quality, temporally coherent results.
+        However, extending them to <strong>motion transfer</strong> &mdash; which requires following a reference motion
+        while aligning with a target prompt &mdash; remains challenging due to a limited understanding of how motion and
+        structure are represented within DiTs. We analyze video DiTs at the <strong>attention-head level</strong> and
+        identify distinct heads specialized for motion and spatial structure. Based on this insight, we propose
+        <strong>HALO</strong>, a head-aware controllable motion transfer framework that requires
+        <strong>no parameter updates</strong>. Our method refines motion cues from motion-specialized heads via
+        <strong>semantic correspondence guidance</strong> and preserves structure through
+        <strong>selective feature injection</strong> from structurally informative heads. This head-level control not
+        only enables accurate motion transfer but also provides an interpretable foundation for controllable video
+        generation with DiTs.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== KEY CLAIMS ===== -->
+  <section>
+    <div class="container">
+      <h2>Key Contributions</h2>
+      <p class="lead">What makes HALO work.</p>
+      <div class="cards">
+        <div class="card">
+          <span class="num">1</span>
+          <h3>Head-level functional analysis</h3>
+          <p>We present the first head-level analysis of video DiTs, revealing <strong>motion-specific</strong> and <strong>structure-specialized</strong> attention heads and validating them as control primitives for controllable video generation.</p>
+        </div>
+        <div class="card">
+          <span class="num">2</span>
+          <h3>HALO: head-aware transfer</h3>
+          <p>A training-free framework that enhances motion fidelity via <strong>semantic-aware displacement optimization</strong> and preserves spatial consistency via <strong>selective feature injection</strong> from structurally informative heads.</p>
+        </div>
+        <div class="card">
+          <span class="num">3</span>
+          <h3>Extensive evaluation</h3>
+          <p>On standard motion transfer benchmarks and our new <strong>Movie Scene Dataset</strong>, HALO achieves better motion coherence and structural alignment than U-Net- and DiT-based baselines.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MOTIVATION ===== -->
+  <section id="motivation">
+    <div class="container">
+      <h2>Why head-aware control?</h2>
+      <p class="lead">Displacement-based motion transfer captures directional cues but ignores <em>semantics</em> and <em>structure</em> &mdash; so motion leaks into the wrong regions and spatial layout drifts.</p>
+      <figure>
+        <img src="static/images/fig2_final.png" alt="Limitations of displacement-based motion transfer versus HALO"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig2_final.png</code> (Fig.&nbsp;2).</div>
+        <figcaption>
+          Displacement-only optimization vs. HALO. <strong>(a)</strong> Without semantic alignment, motion is applied to the
+          wrong regions. <strong>(b)</strong> Without structural preservation, the layout misaligns with the reference.
+          HALO resolves both, ensuring consistent motion and spatial fidelity.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== HEAD ANALYSIS ===== -->
+  <section id="analysis">
+    <div class="container">
+      <h2>Peeking Inside DiT Attention Heads</h2>
+      <p class="lead">How are motion and structural cues internally encoded in video DiTs? We answer this with a head-level analysis, uncovering two distinct, functional head subsets.</p>
+
+      <div class="grid2 analysis-grid">
+        <figure>
+          <span class="tag mot">Analysis 1 &middot; Motion-Specific Heads</span>
+          <img src="static/images/fig3_final.jpg" alt="Motion-specific attention heads captured by displacement maps"
+               onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+          <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig3_final.jpg</code> (Fig.&nbsp;3).</div>
+          <figcaption>
+            <strong>Temporal heads</strong> capture cross-frame diagonals and produce clean displacement maps that align with
+            reference motion, while <strong>spatial heads</strong> maintain intra-frame locality. Directional-alignment and
+            correlation scores confirm temporal heads best encode motion flow.
+          </figcaption>
+        </figure>
+        <figure>
+          <span class="tag str">Analysis 2 &middot; Structure-Specialized Heads</span>
+          <img src="static/images/figure4.png" alt="Structure-specialized attention heads identified via attention entropy"
+               onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+          <div class="img-fallback placeholder" style="display:none">Add <code>static/images/figure4.png</code> (Fig.&nbsp;4).</div>
+          <figcaption>
+            <strong>Low-entropy heads</strong> exhibit sharply diagonal attention patterns and yield feature maps that preserve
+            spatial layout. Attention entropy correlates strongly with hidden-feature spatial entropy, so it serves as a
+            reliable indicator of structural content.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== METHOD ===== -->
+  <section id="method">
+    <div class="container">
+      <h2>Method</h2>
+      <p class="lead">HALO turns the two head insights into control: motion-specific heads guide <em>semantic-aware motion optimization</em>, while structure-specialized heads drive <em>selective feature injection</em>.</p>
+      <figure>
+        <img src="static/images/fig5_final.jpg" alt="HALO framework overview"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig5_final.jpg</code> (Fig.&nbsp;5 overview).</div>
+        <figcaption>
+          From a reference video, HALO extracts displacement maps and head features. Displacements from
+          <strong>motion-specific heads</strong> guide motion by optimizing the latent, while <strong>structure-specialized head
+          features</strong> from the reference are injected to preserve structure during generation.
+        </figcaption>
+      </figure>
+
+      <div class="grid2" style="margin-top:26px; align-items:start;">
+        <figure>
+          <img src="static/images/fig6_final.jpg" alt="Semantic Correspondence Refinement and Semantic Reweighting details"
+               onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+          <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig6_final.jpg</code> (Fig.&nbsp;6).</div>
+          <figcaption>
+            <strong>SCR &amp; SRW.</strong> SCR selects, among top-<em>k</em> attention candidates, the patch closest to the
+            semantic best match; SRW manipulates target cross-frame attention with a correspondence-based bias.
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="static/images/fig7_final.jpg" alt="Effect of SCR and SRW on displacement maps"
+               onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+          <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig7_final.jpg</code> (Fig.&nbsp;7).</div>
+          <figcaption>
+            <strong>Effect on displacement.</strong> The refinements improve robustness to fine-grained object motion and
+            better preserve object shape, yielding cleaner, semantically aligned displacement maps.
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="cards" style="margin-top:30px;">
+        <div class="card">
+          <span class="num">a</span>
+          <h3>Semantic-Aware Motion Guidance</h3>
+          <p>Raw cross-frame attention over-emphasizes visually similar but semantically unrelated regions. <strong>Semantic Correspondence Refinement (SCR)</strong> and <strong>Semantic Reweighting (SRW)</strong> use diffusion-feature similarities to refine the displacement map, yielding semantically coherent motion flow.</p>
+        </div>
+        <div class="card">
+          <span class="num">b</span>
+          <h3>Selective Structural Head Injection</h3>
+          <p>Displacement maps lack intra-frame structure. HALO injects <strong>value features from low-entropy, structure-specialized heads</strong> of the reference, supplying structure-aware guidance without noise or identity leakage.</p>
+        </div>
+        <div class="card">
+          <span class="num">c</span>
+          <h3>Training-free control</h3>
+          <p>Built on the <strong>CogVideoX</strong> video DiT (also validated on Wan) with <strong>no parameter updates</strong>. Head-level control adds only marginal overhead over displacement optimization while improving motion fidelity and structural alignment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== VIDEO RESULTS ===== -->
+  <section id="results">
+    <div class="container">
+      <h2>Video Results</h2>
+      <p class="lead">Pick an example. HALO transfers the reference motion while following the target prompt &mdash; staying motion- and structure-aligned where baselines drift, leak identity, or fail.</p>
+
+      <!-- example selector: buttons are generated by app.js from the EXAMPLES config -->
+      <div class="pills" id="example-pills"></div>
+
+      <!-- prompt line -->
+      <p class="prompt-line" id="example-prompt"></p>
+
+      <!-- video comparison grid: filled by app.js -->
+      <div class="method-grid" id="method-grid"></div>
+
+      <p class="note">
+        Videos autoplay muted and loop. Each panel is labeled with its method; <span class="chip ours">HALO (Ours)</span> is highlighted.
+      </p>
+
+      <h3 style="text-align:center;margin-top:40px;">More qualitative results</h3>
+      <figure style="margin-top:12px;">
+        <img src="static/images/fig11.png" alt="Additional qualitative motion transfer results by HALO"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig11.png</code>.</div>
+        <figcaption>Additional HALO results across diverse reference motions and target prompts, including cross-category transfers (e.g., rhino&nbsp;&rarr;&nbsp;lion, rhino&nbsp;&rarr;&nbsp;bear).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== MOVIE SCENE DATASET ===== -->
+  <section id="moviescene">
+    <div class="container">
+      <h2>Movie Scene Dataset</h2>
+      <p class="lead">A production-oriented benchmark we curate for cinematic motion transfer. Even under complex film-style prompts, HALO preserves target identity while faithfully following the reference dynamics.</p>
+
+      <figure style="margin-bottom:34px;">
+        <img src="static/images/fig9.png" alt="Qualitative results on the Movie Scene Dataset"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig9.png</code> (Fig.&nbsp;9).</div>
+        <figcaption>Qualitative results on the Movie Scene Dataset. HALO follows the reference dynamics while preserving the target identity under complex cinematic prompts, compared to DiTFlow, RoPECraft, GWTF, and MotionClone.</figcaption>
+      </figure>
+
+      <!-- movie-scene example selector -->
+      <div class="pills" id="movie-pills"></div>
+      <p class="prompt-line" id="movie-prompt"></p>
+      <div class="method-grid" id="movie-grid"></div>
+    </div>
+  </section>
+
+  <!-- ===== QUANTITATIVE ===== -->
+  <section id="quant">
+    <div class="container">
+      <h2>Quantitative Results</h2>
+
+      <!-- headline metrics -->
+      <div class="metrics">
+        <div class="metric"><div class="v">66.2</div><div class="k">Motion Fidelity (MF) &mdash; best overall</div></div>
+        <div class="metric"><div class="v">31.7</div><div class="k">CLIP score &mdash; best text&ndash;video alignment</div></div>
+        <div class="metric"><div class="v">93.3</div><div class="k">User-study motion accuracy</div></div>
+      </div>
+
+      <h3 style="text-align:center;margin-top:8px;">Standard motion transfer benchmark</h3>
+      <p class="lead" style="margin-bottom:16px;">Motion transfer must jointly satisfy text alignment (CLIP) and motion fidelity (MF). HALO breaks the CLIP&ndash;MF trade-off seen in prior work while keeping strong structure and temporal scores.</p>
+      <div class="table-wrap">
+        <table class="restable">
+          <thead>
+            <tr><th>Type</th><th>Model</th><th>CLIP&nbsp;&uarr;</th><th>TC&nbsp;&uarr;</th><th>MF&nbsp;&uarr;</th><th>FTD&nbsp;&darr;</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3" class="grp">U-Net</td><td>MoFT <span class="vn">NeurIPS'24</span></td><td>30.9</td><td>85.8</td><td>34.8</td><td>23.0</td></tr>
+            <tr><td>ConMo <span class="vn">CVPR'25</span></td><td>29.8</td><td>85.3</td><td>52.0</td><td class="u">17.4</td></tr>
+            <tr><td>MotionClone <span class="vn">ICLR'25</span></td><td>30.4</td><td>78.6</td><td>55.6</td><td>19.8</td></tr>
+            <tr><td rowspan="3" class="grp">DiT</td><td>DiTFlow <span class="vn">CVPR'25</span></td><td>31.0</td><td class="b">89.5</td><td>59.6</td><td>23.0</td></tr>
+            <tr><td>RoPECraft <span class="vn">NeurIPS'25</span></td><td>30.3</td><td>85.9</td><td>58.2</td><td>19.6</td></tr>
+            <tr><td>GWTF <span class="vn">CVPR'25</span></td><td class="u">31.6</td><td>88.2</td><td class="u">62.5</td><td>21.6</td></tr>
+            <tr class="ours-row"><td class="grp">Ours</td><td>HALO</td><td class="b">31.7</td><td>87.5</td><td class="b">66.2</td><td class="b">19.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note"><span class="sw b">bold</span> = best, <span class="sw u">underline</span> = second best. TC slightly favors more static outputs.</p>
+
+      <figure style="max-width:640px;margin:28px auto 0;">
+        <img src="static/images/fig_quantitative_final.jpg" alt="CLIP score vs Motion Fidelity trade-off"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig_quantitative_final.jpg</code>.</div>
+        <figcaption>Prior methods trade off CLIP against Motion Fidelity. HALO (&#9733;) sits at the top-right &mdash; strong text alignment <em>and</em> the best motion fidelity.</figcaption>
+      </figure>
+
+      <div class="grid2" style="margin-top:36px; align-items:start;">
+        <div>
+          <h3 style="text-align:center;">Movie Scene Dataset</h3>
+          <div class="table-wrap">
+            <table class="restable">
+              <thead>
+                <tr><th>Model</th><th>CLIP&nbsp;&uarr;</th><th>TC&nbsp;&uarr;</th><th>MF&nbsp;&uarr;</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>MotionClone</td><td>27.1</td><td>74.5</td><td>47.7</td></tr>
+                <tr><td>DiTFlow</td><td>29.7</td><td class="b">90.4</td><td>48.4</td></tr>
+                <tr><td>RoPECraft</td><td>28.3</td><td>88.2</td><td>49.1</td></tr>
+                <tr><td>GWTF</td><td class="u">30.2</td><td>87.6</td><td>46.6</td></tr>
+                <tr class="ours-row"><td>HALO</td><td class="b">30.5</td><td class="u">88.9</td><td class="b">52.6</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">Methods requiring video masks are excluded.</p>
+        </div>
+        <div>
+          <h3 style="text-align:center;">User preference study</h3>
+          <div class="table-wrap">
+            <table class="restable">
+              <thead>
+                <tr><th>Model</th><th>Edit&nbsp;Acc.</th><th>TC</th><th>Motion&nbsp;Acc.</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>DiTFlow</td><td class="u">84.1</td><td>83.1</td><td>69.0</td></tr>
+                <tr><td>RoPECraft</td><td>72.4</td><td>75.6</td><td>77.6</td></tr>
+                <tr><td>GWTF</td><td>84.0</td><td>77.1</td><td>72.8</td></tr>
+                <tr class="ours-row"><td>HALO</td><td class="b">86.5</td><td class="b">87.8</td><td class="b">93.3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">20 participants, 5-point Likert, normalized to 0&ndash;100.</p>
+        </div>
+      </div>
+
+      <h3 style="text-align:center;margin-top:36px;">Ablation</h3>
+      <div class="table-wrap">
+        <table class="restable">
+          <thead>
+            <tr><th>#</th><th>Semantic</th><th>Injection</th><th>CLIP&nbsp;&uarr;</th><th>TC&nbsp;&uarr;</th><th>MF&nbsp;&uarr;</th><th>FTD&nbsp;&darr;</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>&mdash;</td><td>&mdash;</td><td>31.0</td><td class="b">89.5</td><td>59.6</td><td>23.0</td></tr>
+            <tr><td>2</td><td>&checkmark;</td><td>&mdash;</td><td>30.6</td><td>88.3</td><td>61.8</td><td>20.5</td></tr>
+            <tr><td>3</td><td>&mdash;</td><td>&checkmark;</td><td>30.9</td><td>88.5</td><td>61.3</td><td>20.9</td></tr>
+            <tr class="ours-row"><td>4</td><td>&checkmark;</td><td>&checkmark;</td><td class="b">31.7</td><td>87.5</td><td class="b">66.2</td><td class="b">19.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Baseline is displacement optimization. "Semantic" = semantic-aware motion guidance; "Injection" = selective structural head injection.</p>
+
+      <figure style="margin-top:22px;">
+        <img src="static/images/fig10_final.jpg" alt="Qualitative ablation results"
+             onerror="this.closest('figure').querySelector('.img-fallback').style.display='flex'; this.style.display='none';">
+        <div class="img-fallback placeholder" style="display:none">Add <code>static/images/fig10_final.jpg</code> (Fig.&nbsp;10).</div>
+        <figcaption>Qualitative ablation (Exp.# match the table). Without semantic guidance, motion leaks to the background; without structural injection, objects distort or duplicate. The full HALO model is consistent with the reference.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== BIBTEX ===== -->
+  <section id="cite">
+    <div class="container">
+      <h2>BibTeX</h2>
+      <pre class="bibtex"><code>@inproceedings{jung2026halo,
+  title     = {Controlling Motion Transfer in Diffusion Transformers via Attention Heads},
+  author    = {Jung, Sunyoung and Park, Jiwoo and Choi, Yoonseok and
+               Choo, Kyobin and Yang, Ming-Hsuan and Hwang, Seong Jae},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026}
+}</code></pre>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      HALO &nbsp;&middot;&nbsp; ECCV 2026. &nbsp;&middot;&nbsp; Page template adapted for HALO.
+    </div>
+  </footer>
+
+</body>
+</html>
