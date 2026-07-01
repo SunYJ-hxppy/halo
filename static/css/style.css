@@ -112,6 +112,40 @@ figcaption { color: var(--fg-soft); font-size: .88rem; text-align: center; margi
 }
 .tldr p { margin: 0; color: var(--fg); font-size: 1.02rem; line-height: 1.6; }
 
+/* ===== teaser video carousel ===== */
+.teaser-carousel { display:flex; align-items:center; gap:12px; }
+.tcar-viewport { flex:1; overflow:hidden; border-radius: var(--radius); }
+.tcar-track { display:flex; transition: transform .4s ease; }
+.tcar-slide { min-width:100%; box-sizing:border-box; }
+.tcar-pair { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:600px){ .tcar-pair{ grid-template-columns:1fr; } }
+.teaser-cell { position:relative; }
+.teaser-cell video {
+  width:100%; aspect-ratio:16/10; object-fit:cover; display:block;
+  border-radius:12px; border:1px solid var(--border); background:#000;
+}
+.teaser-cell.ours video { border-color: var(--accent); box-shadow:0 0 0 2px rgba(124,58,237,.30); }
+.teaser-cell .tag { position:absolute; top:8px; left:8px; z-index:2; margin:0; }
+.teaser-cell .cell-ph { aspect-ratio:16/10; min-height:0; }
+.tcar-slide .slide-prompt { text-align:center; font-style:italic; color:var(--fg); margin:12px auto 0; max-width:760px; }
+
+.tcar-arrow {
+  flex:0 0 auto; width:44px; height:44px; border-radius:50%;
+  border:1px solid var(--border); background:var(--card); color:var(--fg);
+  font-size:1.5rem; line-height:1; cursor:pointer; transition:.15s;
+  display:flex; align-items:center; justify-content:center;
+}
+.tcar-arrow:hover { border-color:var(--accent); color:var(--accent); transform:translateY(-1px); }
+@media (max-width:600px){ .tcar-arrow{ width:36px; height:36px; font-size:1.2rem; } }
+
+.tcar-dots { display:flex; gap:9px; justify-content:center; margin-top:16px; }
+.tcar-dot {
+  width:9px; height:9px; border-radius:50%; border:none; padding:0; cursor:pointer;
+  background:var(--border); transition:.15s;
+}
+.tcar-dot.active { background:linear-gradient(135deg,var(--accent),var(--accent-2)); transform:scale(1.15); }
+.teaser-cap { text-align:center; color:var(--fg-soft); font-size:.95rem; max-width:820px; margin:16px auto 0; }
+
 /* ===== claim cards ===== */
 .cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 8px; }
 @media (max-width: 760px){ .cards{ grid-template-columns:1fr; } }
