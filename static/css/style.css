@@ -203,6 +203,9 @@ figcaption { color: var(--fg-soft); font-size: .88rem; text-align: center; margi
 }
 .method-cell.ours video { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,92,255,.35); }
 .method-cell .tag { position:absolute; top:8px; left:8px; z-index:2; margin:0; }
+/* overlay tags must stay legible on top of (dark) video */
+.method-cell .tag.base, .teaser-cell .tag.base { background: rgba(0,0,0,.6); color:#f1f5f9; backdrop-filter: blur(2px); }
+.method-cell .tag.ref,  .teaser-cell .tag.ref  { background: rgba(0,0,0,.6); color:#ffd166; backdrop-filter: blur(2px); }
 .cell-ph { min-height: 0; aspect-ratio: 16/10; font-size:.82rem; line-height:1.4; }
 
 .note { text-align:center; color: var(--fg-soft); font-size:.85rem; margin-top: 16px; }
