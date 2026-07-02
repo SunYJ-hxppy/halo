@@ -224,7 +224,7 @@ table.restable th, table.restable td {
 table.restable thead th {
   background: var(--card); color: var(--fg); font-weight:700; position: sticky; top:0;
 }
-table.restable td:nth-child(1), table.restable td.grp { text-align:left; }
+table.restable td:nth-child(1), table.restable td.grp, table.restable td.model { text-align:left; }
 table.restable td.grp { color: var(--fg-soft); font-weight:600; vertical-align: middle; border-right:1px solid var(--border); }
 table.restable tbody tr:last-child td { border-bottom:none; }
 table.restable .vn { color: var(--fg-soft); font-size:.74rem; font-weight:500; margin-left:4px; }
