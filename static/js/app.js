@@ -42,9 +42,14 @@ const TEASER_SAMPLES = [
     halo:      "static/videos/teaser/carroundabout_ours.mp4",
   },
   {
-    prompt: "Motion transfer result.",
+    prompt: "Two stormtroopers riding mechanical steeds across a concrete field.",
     reference: "static/videos/teaser/EMA_MVI2_ref.mp4",
     halo:      "static/videos/teaser/EMA_MVI2_ours.mp4",
+  },
+  {
+    prompt: "A boat driving on a winding river through a serene canyon.",
+    reference: "static/videos/teaser/Car_turn.mp4",
+    halo:      "static/videos/teaser/Car_turn_ours.mp4",
   },
 ];
 
@@ -57,7 +62,6 @@ const BENCHMARK_EXAMPLES = [
 
 // Movie Scene Dataset examples (Reference + HALO only).
 const MOVIE_EXAMPLES = [
-  { id: "ms_carturn",  label: "Car turn",   prompt: "Cinematic car turn." },
   { id: "ms_moi",      label: "MOI",        prompt: "Cinematic motion transfer." },
   { id: "ms_moisc2",   label: "MOI (2)",    prompt: "Cinematic motion transfer." },
   { id: "ms_tax3",     label: "Taxi",       prompt: "Cinematic taxi scene." },
