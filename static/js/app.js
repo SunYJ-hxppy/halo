@@ -37,7 +37,7 @@ const MOVIE_METHODS = [
 // Videos live at:  static/videos/teaser/<file>
 const TEASER_SAMPLES = [
   {
-    prompt: "A car driving around a roundabout.",
+    prompt: "A red Porche drives beside a lake at sunrise.",
     reference: "static/videos/teaser/carroundabout_ref.mp4",
     halo:      "static/videos/teaser/carroundabout_ours.mp4",
   },
@@ -55,16 +55,17 @@ const TEASER_SAMPLES = [
 
 // Standard benchmark examples.  id -> folder name under static/videos/
 const BENCHMARK_EXAMPLES = [
-  { id: "driftturn",   label: "Drift turn",   prompt: "A car performing a drift turn." },
-  { id: "motorbike",   label: "Motorbike",    prompt: "The person is riding a motorbike on a muddy course." },
-  { id: "scootergray", label: "Scooter",      prompt: "A person riding a scooter." },
+  { id: "driftturn",   label: "Drift turn",   prompt: "A jet plane racing through the sky, with smoke trailing behind it." },
+  { id: "scootergray", label: "Scooter",      prompt: "A child riding a skateboard on a park pathway." },
+  { id: "motorbike",   label: "Motorbike",    prompt: "The man is riding a horse on a bridge, passing a roadside sign." },
+
 ];
 
 // Movie Scene Dataset examples (Reference + HALO only).
 const MOVIE_EXAMPLES = [
-  { id: "ms_moi",      label: "MOI",        prompt: "Cinematic motion transfer." },
-  { id: "ms_moisc2",   label: "MOI (2)",    prompt: "Cinematic motion transfer." },
-  { id: "ms_tax3",     label: "Taxi",       prompt: "Cinematic taxi scene." },
+  { id: "ms_moi",      label: "Tram",        prompt: "A sleek crystal rail-car drifts past along shimmering track." },
+  { id: "ms_moisc2",   label: "Rickshaw",    prompt: "Indiana Jones pulls a vintage richshaw across a sunlit dirt field." },
+  { id: "ms_tax3",     label: "Human",       prompt: "Mario walks forward with a steady bounce across a bright viallage plaza." },
 ];
 
 // ---------- build one <figure> panel for a (example, method) pair ----------
